@@ -5,7 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 
-from api.serializers import UserSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+from api.serializers import TokenSerializer, UserSerializer
 from api.models import User
 
 def get_user(self, pk):
@@ -25,3 +27,18 @@ class UserView(APIView):
         user = get_user(pk)
         user.delete()
         return Response(status=status.HTTP_200_OK)
+
+
+class AuthView(APIView):
+    def get(self, request):
+        pass
+
+    def post(self, request):
+        data = JSONParser().parse(request)
+        serializer = TokenSerializer(data=data)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        pass
