@@ -13,7 +13,7 @@ class BaseModel(Model):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, login_id, email, password):
+    def create_user(self, login_id, email, password, **kwargs):
         user = self.model(
             login_id=login_id,
             email=email,
@@ -22,17 +22,16 @@ class UserManager(BaseUserManager):
         user.save()
         return user
 
-    def create_superuser(self, login_id, email=None, password=None, **extra_fields):
+    def create_superuser(self, login_id=None, email=None, password=None, **extra_fields):
         superuser = self.create_user(
             login_id=login_id,
-            password=password,
             email=email,
-            is_superuser=True
+            password=password,
         )
         superuser.is_staff = True
         superuser.is_superuser = True
         superuser.is_active = True
-        superuser.save()
+        superuser.save(using=self._db)
         return superuser
 
 
@@ -46,7 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     objects = UserManager()
 
     USERNAME_FIELD = 'login_id'
-    REQUIRED_FIELD = ['login_id', 'email', 'password']
+    REQUIRED_FIELDS = ['email']
 
     class Meta:
         db_table = 'user'
