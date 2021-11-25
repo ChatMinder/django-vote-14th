@@ -27,7 +27,7 @@ class Candidate(BaseModel):
 
 
 class Vote(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='vote')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='candidate')
 
     def save(self, *args, **kwargs):
