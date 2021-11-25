@@ -11,9 +11,7 @@ class LoginBackend(ModelBackend):
         try:
             user = User.objects.get(login_id=login_id)
             if user.check_password(password):
-                print("success")
                 return user
-            print("fail")
             return None
 
         except User.DoesNotExist:
@@ -33,28 +31,36 @@ class TokenSerializer(TokenObtainPairSerializer):
         if user is None:
             raise serializers.ValidationError(detail=True)
         
-        id = user.id
-        token = super().get_token(user)
-        
-        return {
-            'id':id,
-            'login_id':login_id,
-            'token':token
-        }
+        validated_data = super().validate(data)
+        refresh = self.get_token(user)
+        validated_data["refresh"] = str(refresh)
+        validated_data["access"] = str(refresh.access_token)
+        validated_data["email"] = user.email
+        validated_data["login_id"] = user.login_id
+        validated_data["id"] = user.id
+
+        return validated_data
 
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(source='user.password', write_only=True)
+    login_id = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    email = serializers.CharField()
 
     class Meta:
         model = User
         fields = '__all__'
     
-    def create(self, data):
+    def create(self, validated_data):
+        login_id = validated_data.get('login_id')
+        email = validated_data.get('email')
+        password = validated_data.get('password')
         user = User(
-            login_id=data.get('login_id'),
-            email=data.get('email'),
+            login_id=login_id,
+            email=email
         )
-        user.set_password(data.get('password'))
+        user.set_password(password)
         user.save()
         return user
+
+
