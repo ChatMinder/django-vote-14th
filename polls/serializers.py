@@ -3,18 +3,18 @@ from .models import *
 from django.shortcuts import get_object_or_404
 
 
+class CandidateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Candidate
+        fields = "__all__"
+
+
 class QuestionSerializer(serializers.ModelSerializer):
+    candidates = CandidateSerializer(many=True, read_only=True, source="candidates_set")
 
     class Meta:
         model = Question
         fields = '__all__'
-
-
-class CandidateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Candidate
-        fields = "__all__"
 
 
 class VoteSerializer(serializers.ModelSerializer):
@@ -29,7 +29,7 @@ class VoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vote
-        fields =['candidate_name', 'user_login_id']
+        fields = ['candidate_name', 'user_login_id']
 
     def get_candidate_name(self, obj):
         return obj.candidate.name
