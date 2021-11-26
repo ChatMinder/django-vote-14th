@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 class CandidateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Candidate
-        fields = "__all__"
+        fields = '__all__'
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -14,25 +14,25 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = '__all__'
+        fields = ['id', 'created_at', 'updated_at', 'question_text', 'candidates']
 
 
 class VoteSerializer(serializers.ModelSerializer):
-    candidate_name = serializers.SerializerMethodField
+    candidates_name = serializers.SerializerMethodField
     user_login_id = serializers.SerializerMethodField
 
     def create(self, validated_data):
-        candidate = get_object_or_404(Candidate, name=validated_data['candidate_name'])
+        candidate = get_object_or_404(Candidate, name=validated_data['candidates_name'])
         vote = Vote
         vote.candidate = candidate
         vote.save()
 
     class Meta:
         model = Vote
-        fields = ['candidate_name', 'user_login_id']
+        exclude = ['candidate']
 
-    def get_candidate_name(self, obj):
+    def get_candidates_name(self, obj):
         return obj.candidate.name
 
-    def get_user_login_id(self, obj):
+    def get_user_id(self, obj):
         return obj.user.login_id
