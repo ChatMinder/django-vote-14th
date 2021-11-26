@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
-from .models import *
+from polls.models import *
 from polls.serializers import QuestionSerializer
 
 
