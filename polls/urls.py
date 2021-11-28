@@ -8,6 +8,7 @@ router = routers.DefaultRouter()
 router.register(r'questions', QuestionViewSet)
 router.register(r'candidates', CandidateViewSet)
 
+
 urlpatterns = [
     path('', include(router.urls)),
     #path('votes/', views.CastVote.as_view()),
