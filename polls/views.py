@@ -8,7 +8,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from polls.models import *
-from polls.serializers import QuestionSerializer
+
+from polls.serializers import QuestionSerializer, CandidateSerializer
 from rest_framework.views import APIView
 from api.models import User
 
@@ -16,6 +17,13 @@ from api.models import User
 class QuestionViewSet(ModelViewSet):
     serializer_class = QuestionSerializer
     queryset = Question.objects.all()
+
+
+
+class CandidateViewSet(ModelViewSet):
+    serializer_class = CandidateSerializer
+    queryset = Candidate.objects.all()
+
 
 
 # class CastVote(APIView):
@@ -42,5 +50,4 @@ class QuestionViewSet(ModelViewSet):
 #                 },
 #                 status=status.HTTP_200_OK
 #             )
-
 
