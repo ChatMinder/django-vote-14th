@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.settings import api_settings
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.backends import ModelBackend
@@ -55,9 +57,9 @@ class TokenSerializer(TokenObtainPairSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    login_id = serializers.CharField()
-    password = serializers.CharField(write_only=True)
-    email = serializers.CharField()
+    login_id = serializers.CharField(required=False)
+    password = serializers.CharField(write_only=True, required=False)
+    email = serializers.CharField(required=False)
 
     class Meta:
         model = User
