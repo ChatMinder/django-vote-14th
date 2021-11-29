@@ -1,7 +1,6 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import IntegrityError
+
 from django.shortcuts import get_object_or_404, redirect
+
 from django.views import View, generic
 from rest_framework import status
 from rest_framework.response import Response
@@ -9,6 +8,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from polls.models import *
+
 from polls.serializers import QuestionSerializer, CandidateSerializer, VoteSerializer
 from rest_framework.views import APIView
 from api.models import User
@@ -17,7 +17,6 @@ from api.models import User
 class QuestionViewSet(ModelViewSet):
     serializer_class = QuestionSerializer
     queryset = Question.objects.all()
-
 
 class CandidateViewSet(ModelViewSet):
     serializer_class = CandidateSerializer
@@ -45,4 +44,3 @@ class CastVote(APIView):
                 status=status.HTTP_200_OK
             )
 
-#

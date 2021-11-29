@@ -37,4 +37,3 @@ class Vote(BaseModel):
 
     def __str__(self):
         return '{} -> {}'.format(self.user.login_id, self.candidate.name)
-

@@ -20,24 +20,11 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 class VoteSerializer(serializers.ModelSerializer):
     candidates_name = serializers.SerializerMethodField()
-#     #user_login_id = serializers.SerializerMethodField()
-#
-#     def create(self, validated_data):
-#         candidate = Candidate.objects
-#         vote = Vote()
-#         vote.candidate = candidate
-#         try:
-#             vote.save(self)
-#         except IntegrityError:
-#             return vote
-#         return vote
-#
+
     class Meta:
         model = Vote
         fields = ('candidates_name',)
-#
+
     def get_candidates_name(self, obj):
         return obj.candidate.name
 
-#     # def get_user_login_id(self, obj):
-#     #     return obj.user.login_id
