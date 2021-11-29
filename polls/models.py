@@ -26,15 +26,15 @@ class Candidate(BaseModel):
         return self.name
 
 
-# class Vote(BaseModel):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
-#     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='candidate')
-#
-#     def save(self, *args, **kwargs):
-#         self.candidate.votes += 1
-#         self.candidate.save()
-#         super().save(*args, **kwargs)
-#
-#     def __str__(self):
-#         return '{} -> {}'.format(self.user.login_id, self.candidate.name)
+class Vote(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='candidate')
+
+    def save(self, *args, **kwargs):
+        self.candidate.votes += 1
+        self.candidate.save()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return '{} -> {}'.format(self.user.login_id, self.candidate.name)
 

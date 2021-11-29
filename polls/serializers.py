@@ -18,8 +18,8 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'created_at', 'updated_at', 'question_text', 'question_candidate']
 
 
-# class VoteSerializer(serializers.ModelSerializer):
-#     candidates_name = serializers.SerializerMethodField()
+class VoteSerializer(serializers.ModelSerializer):
+    candidates_name = serializers.SerializerMethodField()
 #     #user_login_id = serializers.SerializerMethodField()
 #
 #     def create(self, validated_data):
@@ -32,12 +32,12 @@ class QuestionSerializer(serializers.ModelSerializer):
 #             return vote
 #         return vote
 #
-#     class Meta:
-#         model = Vote
-#         fields = ('candidates_name',)
+    class Meta:
+        model = Vote
+        fields = ('candidates_name',)
 #
-#     def get_candidates_name(self, obj):
-#         return obj.candidate.name
-#
+    def get_candidates_name(self, obj):
+        return obj.candidate.name
+
 #     # def get_user_login_id(self, obj):
 #     #     return obj.user.login_id
