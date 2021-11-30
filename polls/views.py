@@ -1,23 +1,22 @@
+import jwt
+from django.shortcuts import get_object_or_404, redirect
 
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
-from django.views import View, generic
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from api.permissions import IsOwnerOrSuperuser
 from polls.models import *
 
-from polls.serializers import QuestionSerializer, CandidateSerializer
+from polls.serializers import CandidateSerializer, VoteSerializer
 from rest_framework.views import APIView
 from api.models import User
+from vote.settings.base import SECRET_KEY
 
 
-class QuestionViewSet(ModelViewSet):
-    serializer_class = QuestionSerializer
-    queryset = Question.objects.all()
-
+def get_user(pk):
+    return get_object_or_404(User, pk=pk)
 
 
 class CandidateViewSet(ModelViewSet):
@@ -25,29 +24,33 @@ class CandidateViewSet(ModelViewSet):
     queryset = Candidate.objects.all()
 
 
+class CastVote(APIView):
+    permission_classes = [IsOwnerOrSuperuser, ]
 
-# class CastVote(APIView):
-#     #authentication_classes = JWTAuthentication
-#
-#     def post(self, request):
-#         serializer = VoteSerializer(data=request.data)
-#         user = request.user
-#         if serializer.is_valid():
-#             created_instance = serializer.create(validated_data=request.data)
-#             created_instance.user.id = user.id
-#             try:
-#                 created_instance.save()
-#             except IntegrityError:
-#                 return Response(
-#                     {
-#                         "message": "이미 투표했습니다."
-#                     },
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-#             return Response(
-#                 {
-#                     "message": "투표 성공"
-#                 },
-#                 status=status.HTTP_200_OK
-#             )
+    def post(self, request):
+        access = request.COOKIES.get('access')
+
+        payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
+        pk = payload.get('user_id')
+        user = get_user(pk=pk)
+        serializer = VoteSerializer(data=request.data)
+        if user.voted:
+            return Response(
+                {
+                    "message": "이미 투표하셨습니다"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            if serializer.is_valid():
+                serializer.create(validated_data=request.data)
+                user.voted = True
+                user.save()
+                return Response(
+                    {
+                        "message": "투표 성공"
+                    },
+                    status=status.HTTP_200_OK
+                )
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
