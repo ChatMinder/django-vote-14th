@@ -96,6 +96,59 @@ class AuthView(APIView):
                 user = get_user(pk=pk)
                 serializer = UserSerializer(instance=user)
                 res = Response(serializer.data, status=status.HTTP_200_OK)
+                res.set_cookie('access', access)
+                res.set_cookie('refresh', refresh)
+                return res
+
+            raise jwt.exceptions.InvalidTokenError
+        
+        except(jwt.exceptions.InvalidTokenError):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    # access, refresh 토큰 생성 (로그인)
+    def post(self, request):
+        data = JSONParser().parse(request)
+        serializer = TokenSerializer(data=data)
+        if serializer.is_valid():
+            res = Response(serializer.data, status=status.HTTP_200_OK)
+            res.set_cookie('access', serializer.data.get('access'))
+            res.set_cookie('refresh', serializer.data.get('refresh'))
+            return res
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # access, refresh 토큰 제거 (로그아웃)
+    def delete(self, request):
+        res = Response(status=status.HTTP_200_OK)
+        res.set_cookie('access', '')
+        res.set_cookie('refresh', '')
+        return res
+
+# httponly cookie를 반환
+class AuthViewHttpOnly(APIView):
+    permission_classes = [permissions.AllowAny,]
+
+    # 토큰 주인 정보 조회
+    def get(self, request):
+        try :
+            access = request.COOKIES['access']
+            payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
+            pk = payload.get('user_id')
+            user = get_user(pk=pk)
+            serializer = UserSerializer(instance=user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # 토큰 만료시 토큰 갱신
+        except(jwt.exceptions.ExpiredSignatureError):
+            data = {'refresh':request.COOKIES.get('refresh', None)}
+            serializer = TokenRefreshSerializer(data=data)
+            if serializer.is_valid(raise_exception=True):
+                access = serializer.data.get('access', None)
+                refresh = serializer.data.get('refresh', None)
+                payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
+                pk = payload.get('user_id')
+                user = get_user(pk=pk)
+                serializer = UserSerializer(instance=user)
+                res = Response(serializer.data, status=status.HTTP_200_OK)
                 res.set_cookie('access', access, httponly=True)
                 res.set_cookie('refresh', refresh, httponly=True)
                 return res
@@ -108,16 +161,14 @@ class AuthView(APIView):
     # access, refresh 토큰 생성 (로그인)
     def post(self, request):
         data = JSONParser().parse(request)
-        print(type(data))
-        print(data)
         serializer = TokenSerializer(data=data)
         if serializer.is_valid():
-            res = Response(status=status.HTTP_200_OK)
+            res = Response(serializer.data, status=status.HTTP_200_OK)
             res.set_cookie('access', serializer.data.get('access'), httponly=True)
             res.set_cookie('refresh', serializer.data.get('refresh'), httponly=True)
             return res
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
     # access, refresh 토큰 제거 (로그아웃)
     def delete(self, request):
         res = Response(status=status.HTTP_200_OK)
