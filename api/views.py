@@ -71,6 +71,21 @@ class UserDetailView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
+class UserDuplicateView(APIView):
+    def get(self, request):
+        id = request.GET.get('id') or None
+        email = request.GET.get('email') or None
+        if id is not None and email is not None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        elif id is not None:
+            isExist = User.objects.filter(login_id=id).exists()
+        elif email is not None:
+            isExist = User.objects.filter(email=email).exists()
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(isExist, status=status.HTTP_200_OK)
+
+
 class AuthView(APIView):
     permission_classes = [permissions.AllowAny,]
 
