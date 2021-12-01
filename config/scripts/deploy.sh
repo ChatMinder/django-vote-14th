@@ -24,4 +24,6 @@ then
 fi
 
 echo "start docker-compose up: ubuntu"
+sudo cp /etc/letsencrypt/live/chatminder.cf/fullchain.pem /home/ubuntu/srv/ubuntu/vote/config/nginx
+sudo cp /etc/letsencrypt/live/chatminder.cf/privkey.pem /home/ubuntu/srv/ubuntu/vote/config/nginx
 sudo docker-compose -f /home/ubuntu/srv/ubuntu/vote/docker-compose.prod.yml up --build -d
