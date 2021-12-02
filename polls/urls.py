@@ -1,13 +1,10 @@
-from django.urls import include, path
+from django.urls import path
 from rest_framework import routers
 
 from polls import views
-from polls.views import CandidateViewSet
-
-router = routers.DefaultRouter()
-router.register(r'candidates', CandidateViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('votes/', views.CastVote.as_view()),
+    path('votes', views.CastVote.as_view()),
+    path('candidates', views.CandidateList.as_view()),
+    path('candidates/<int:pk>', views.CandidateDetail.as_view())
 ]
