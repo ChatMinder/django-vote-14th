@@ -28,29 +28,27 @@ class CastVote(APIView):
     permission_classes = [IsOwnerOrSuperuser, ]
 
     def post(self, request):
-        access = request.COOKIES.get('access')
-
-        payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
-        pk = payload.get('user_id')
-        user = get_user(pk=pk)
+        user = request.user
         serializer = VoteSerializer(data=request.data)
-        if user.voted:
-            return Response(
-                {
-                    "message": "이미 투표하셨습니다"
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if user.is_anonymous:
+            return Response("알 수 없는 유저 입니다.", status=status.HTTP_404_NOT_FOUND)
         else:
-            if serializer.is_valid():
-                serializer.create(validated_data=request.data)
-                user.voted = True
-                user.save()
+            if user.voted:
                 return Response(
                     {
-                        "message": "투표 성공"
+                        "message": "이미 투표하셨습니다"
                     },
-                    status=status.HTTP_200_OK
+                    status=status.HTTP_400_BAD_REQUEST
                 )
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
+            else:
+                if serializer.is_valid():
+                    serializer.create(validated_data=request.data)
+                    user.voted = True
+                    user.save()
+                    return Response(
+                        {
+                            "message": "투표 성공"
+                        },
+                        status=status.HTTP_200_OK
+                    )
+                return Response(status=status.HTTP_400_BAD_REQUEST)
