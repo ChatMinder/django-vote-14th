@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AnonymousUser
 import jwt
 import json
 
@@ -24,12 +25,13 @@ def get_user(pk):
 
 
 class UserView(APIView):
-    permission_classes = [IsSuperuser,]
+    permission_classes = [permissions.AllowAny,]
 
-    # 전체 유저 조회
+    # 현재 유저 조회
     def get(self, request):
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
+        if request.user.is_anonymous:
+            return Response("알 수 없는 유저 입니다.", status=status.HTTP_404_NOT_FOUND)
+        serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # 회원가입
@@ -41,21 +43,36 @@ class UserView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    # 수정
+    def patch(self, request):
+        if request.user.is_anonymous:
+            return Response("알 수 없는 유저 입니다.", status=status.HTTP_404_NOT_FOUND)
+        data = JSONParser().parse(request)
+        serializer = UserSerializer(instance=request.user, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # 특정 유저 삭제
+    def delete(self, request, pk):
+        if request.user.is_anonymous:
+            return Response("알 수 없는 유저 입니다.", status=status.HTTP_404_NOT_FOUND)
+        request.user.delete()
+        return Response("삭제 완료", status=status.HTTP_200_OK)
     
 class UserDetailView(APIView):
-    permission_classes = [IsOwnerOrSuperuser,]
+    permission_classes = [IsSuperuser,]
 
     # 특정 유저 조회
     def get(self, request, pk):
         user = get_user(pk=pk)
-        self.check_object_permissions(request, user)
         serializer = UserSerializer(user)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
     
     # 특정 유저 데이터 수정
     def patch(self, request, pk):
         user = get_user(pk=pk)
-        self.check_object_permissions(request, user)
         data = JSONParser().parse(request)
         serializer = UserSerializer(instance=user, data=data)
         if serializer.is_valid():
@@ -86,7 +103,23 @@ class UserDuplicateView(APIView):
         return Response(isExist, status=status.HTTP_200_OK)
 
 
+# cookie X
 class AuthView(APIView):
+    permission_classes = [permissions.AllowAny,]
+
+    # access, refresh 토큰 생성 (로그인)
+    def post(self, request):
+        data = JSONParser().parse(request)
+        serializer = TokenSerializer(data=data)
+        if serializer.is_valid():
+            res = Response(serializer.data, status=status.HTTP_200_OK)
+            return res
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # logout -> front
+
+
+class AuthCookieView(APIView):
     permission_classes = [permissions.AllowAny,]
 
     # 토큰 주인 정보 조회
