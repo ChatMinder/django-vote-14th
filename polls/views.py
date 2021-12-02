@@ -1,5 +1,5 @@
-import jwt
-from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 
 
 from rest_framework import status
@@ -12,17 +12,47 @@ from polls.models import *
 from polls.serializers import CandidateSerializer, VoteSerializer
 from rest_framework.views import APIView
 from api.models import User
-from vote.settings.base import SECRET_KEY
 
 
 def get_user(pk):
     return get_object_or_404(User, pk=pk)
 
 
-class CandidateViewSet(ModelViewSet):
-    serializer_class = CandidateSerializer
-    queryset = Candidate.objects.all()
+class CandidateList(APIView):
+    def get(self, request):
+        candidates = Candidate.objects.all()
+        serializer = CandidateSerializer(candidates, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def post(self, request):
+        serializer = CandidateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CandidateDetail(APIView):
+    def get_candidate(self, pk):
+        return get_object_or_404(Candidate, pk=pk)
+
+    def get(self, request, pk):
+        candidate = self.get_candidate(pk=pk)
+        serializer = CandidateSerializer(candidate)
+        return Response(serializer)
+
+    def put(self, request, pk):
+        candidate = self.get_candidate(pk)
+        serializer = CandidateSerializer(candidate)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, tatus=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):  # 특정 Post 삭제
+        candidate = self.get_candidate(pk)
+        candidate.delete()
+        return Response("삭제 완료", status=status.HTTP_200_OK)
 
 class CastVote(APIView):
     permission_classes = [IsOwnerOrSuperuser, ]

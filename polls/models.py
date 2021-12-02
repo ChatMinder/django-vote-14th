@@ -10,7 +10,7 @@ class BaseModel(models.Model):
 
 
 class Candidate(BaseModel):
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, null=False, blank=False)
     votes = models.IntegerField(default=0)
 
     def __str__(self):
