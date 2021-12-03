@@ -1,12 +1,5 @@
 from django.db import models
-
-
-class BaseModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True, editable=False)
-
-    class Meta:
-        abstract = True
+from api.models import BaseModel
 
 
 class Candidate(BaseModel):
@@ -23,7 +16,6 @@ class Vote(BaseModel):
     def save(self, *args, **kwargs):
         self.candidate.votes += 1
         self.candidate.save()
-        print(self.candidate.votes)
         super().save(*args, **kwargs)
 
     def __str__(self):
