@@ -159,7 +159,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:3000",
     "https://127.0.0.1:3000",
     "https://0.0.0.0:3000",
-    "http://react-vote-14th-ten.vercel.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
