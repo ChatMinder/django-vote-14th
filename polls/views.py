@@ -20,7 +20,7 @@ def get_user(pk):
 
 class CandidateList(APIView):
     def get(self, request):
-        candidates = Candidate.objects.all()
+        candidates = Candidate.objects.all().order_by('-votes')
         serializer = CandidateSerializer(candidates, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
