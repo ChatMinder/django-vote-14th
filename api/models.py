@@ -3,11 +3,12 @@ from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 
+
 class BaseModel(Model):
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
-    
+
     class Meta:
         abstract = True
 
@@ -50,4 +51,3 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
     class Meta:
         db_table = 'user'
-

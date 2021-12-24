@@ -8,6 +8,7 @@ from django.contrib.auth.backends import ModelBackend
 
 from .models import User
 
+
 class LoginBackend(ModelBackend):
     def authenticate(self, request, login_id=None, password=None, **kwargs):
         try:
@@ -18,6 +19,7 @@ class LoginBackend(ModelBackend):
 
         except User.DoesNotExist:
             return None
+
 
 class TokenSerializer(TokenObtainPairSerializer):
     id = serializers.UUIDField(required=False, read_only=True)
@@ -44,7 +46,7 @@ class TokenSerializer(TokenObtainPairSerializer):
         user = authenticate(login_id=login_id, password=password)
         if user is None:
             raise serializers.ValidationError(detail=True)
-        
+
         validated_data = super().validate(data)
         refresh = self.get_token(user)
         validated_data["refresh"] = str(refresh)
@@ -64,7 +66,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-    
+
     def create(self, validated_data):
         login_id = validated_data.get('login_id')
         email = validated_data.get('email')
