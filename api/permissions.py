@@ -9,6 +9,7 @@ from vote.settings.base import SECRET_KEY
 def get_user(pk):
     return get_object_or_404(User, pk=pk)
 
+
 '''
 class IsSuperuser(BasePermission):
     def has_permission(self, request, view):
@@ -41,11 +42,13 @@ class IsOwnerOrSuperuser(BasePermission):
             return False
 '''
 
+
 class IsSuperuser(BasePermission):
     def has_permission(self, request, view):
         if request.method == 'POST':
             return True
         return request.user.is_superuser
+
 
 class IsOwnerOrSuperuser(BasePermission):
     def has_permission(self, request, view):
