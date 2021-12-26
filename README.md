@@ -186,3 +186,97 @@ ports:
 
 ### 채리
 
+* 투표기능 담당
+
+### Model
+```python
+from django.db import models
+from api.models import BaseModel
+
+
+class Candidate(BaseModel): #후보자 생성 및 등록
+    name = models.CharField(max_length=250, null=False, blank=False)
+    votes = models.IntegerField(default=0)#투표 여부
+
+    def __str__(self):
+        return self.name
+
+
+class Vote(BaseModel):
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='candidate')
+
+    def save(self, *args, **kwargs):
+        self.candidate.votes += 1
+        self.candidate.save()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return '{} voted'.format(self.candidate.name)
+```
+
+* save() 메소드 오버라이딩하여 투표 요청이 들어오면 바로 해당 후보의 득표수를 증가시켜주어 DB에 저장
+* vote과 candidate을 foreign key로 연결할여 1:M 맵핑
+
+
+### Serializer
+
+```python
+class CandidateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Candidate
+        fields = '__all__'
+
+
+class VoteSerializer(serializers.ModelSerializer):
+    candidate_name = serializers.CharField(write_only=True)
+
+    def create(self, validated_data):
+        candidate = get_object_or_404(Candidate, name=validated_data["candidate_name"])
+        vote = Vote()
+        vote.candidate = candidate
+        vote.save()
+        return vote
+
+    class Meta:
+        model = Vote
+        fields = ('candidate_name',)
+
+```
+* create()메소드 오버라이딩해줘서 request로 전달된 데이터를 vote객체에 저장하여 다시 객체 리턴
+
+### View
+
+```python
+class CastVote(APIView):
+    permission_classes = [IsOwnerOrSuperuser, ]
+
+    def post(self, request):
+        user = request.user
+        serializer = VoteSerializer(data=request.data)
+        if user.is_anonymous: #로그인 되어있는지 확인 
+            return Response("알 수 없는 유저 입니다.", status=status.HTTP_404_NOT_FOUND)
+        else:
+            if user.voted: #유저가 투표했는지
+                return Response(
+                    {
+                        "message": "이미 투표하셨습니다"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                if serializer.is_valid(): #유효성 검사 진행
+                    serializer.create(validated_data=request.data)
+                    user.voted = True
+                    user.save()
+                    return Response(
+                        {
+                            "message": "투표 성공"
+                        },
+                        status=status.HTTP_200_OK
+                    )
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+```
+
+* Modelviewset을 사용하지 않고 함수형 뷰를 사용하여 APIview 작성
+* 유저 인증 방식은 위에서 설명해준대로 request.user를 사용하여 유저의 정보를 확인
