@@ -10,6 +10,10 @@
 
 ### ✔ [투표하기](https://react-vote-14th-ten.vercel.app)
 
+### ✔협업 방식
+gitflow의 방식으로 브랜치 관리   
+`feature/vote`으로 브랜치 생성후 `squash and merge` -> 브랜치 삭제
+
 
 ### 준환
 * 회원가입, 로그인 담당
@@ -278,5 +282,7 @@ class CastVote(APIView):
 
 ```
 
-* Modelviewset을 사용하지 않고 함수형 뷰를 사용하여 APIview 작성
-* 유저 인증 방식은 위에서 설명해준대로 request.user를 사용하여 유저의 정보를 확인
+
+* Modelviewset을 사용하지 않고 APIview 사용
+* 유저 인증 방식은 위에서 설명해준대로 request.user를 사용하여 유저의 정보를 확인 후 알수 없는 유저이면 에러 발생
+
