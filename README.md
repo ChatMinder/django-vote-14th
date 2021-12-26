@@ -282,5 +282,7 @@ class CastVote(APIView):
 
 ```
 
+
 * Modelviewset을 사용하지 않고 APIview 사용
 * 유저 인증 방식은 위에서 설명해준대로 request.user를 사용하여 유저의 정보를 확인 후 알수 없는 유저이면 에러 발생
+
